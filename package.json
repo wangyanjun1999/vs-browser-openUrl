@@ -5,17 +5,14 @@
     "publisher": "wyj",
     "author": {
         "name": "wyj",
-        "url": "https://github.com/Phu1237"
+        "url": "https://github.com/wangyanjun1999"
     },
     "version": "1.0.0",
     "license": "SEE LICENSE IN LICENSE.md",
-    "bugs": {
-        "url": "https://github.com/Phu1237/vscode-vs-browser/issues",
-        "email": "phu1237@gmail.com"
-    },
+
     "repository": {
         "type": "git",
-        "url": "https://github.com/Phu1237/vscode-vs-browser"
+        "url": "https://github.com/wangyanjun1999/vs-browser-openUrl"
     },
     "engines": {
         "vscode": "^1.63.0"
