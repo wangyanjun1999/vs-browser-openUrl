@@ -2,6 +2,15 @@
 
 ## CHANGELOG
 
+### [3.1.0]
+增强浏览器功能，包括历史记录管理和导航按钮，改进代理服务器的错误处理和安全性。
+
+删除 package-lock.json 文件，更新 package.json 以添加右键菜单支持的命令 vs-browser.openLink，修改 tsconfig.json 以跳过库检查，更新 VSCode 设置，
+
+### [3.0.0]
+增加自定义localhost打开
+
+
 ### [2.2.0]
 
 - Add: Favorite pages function

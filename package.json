@@ -1,13 +1,13 @@
 {
-    "name": "vs-browser-openUrl",
-    "displayName": "VS Browser OpenUrl",
+    "name": "open-vs-embedded-browser",
+    "displayName": "open-vs-embedded-browser",
     "description": "一个功能增强的浏览器打开工具，支持快速打开URL和设置代理。",
-    "publisher": "wyj",
+    "publisher": "06a678fb-6fc1-623d-88d6-77ab9a4932cc",
     "author": {
         "name": "wyj",
         "url": "https://github.com/wangyanjun1999"
     },
-    "version": "1.0.0",
+    "version": "3.1.0",
     "license": "SEE LICENSE IN LICENSE.md",
     "repository": {
         "type": "git",
