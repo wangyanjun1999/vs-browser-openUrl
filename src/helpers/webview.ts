@@ -7,6 +7,7 @@ import * as server from "./server";
 import CONST_CONFIGS from "../constants/configs";
 import CONST_WEBVIEW from "../constants/webview";
 import { startStatusBarItem } from "../helpers/extension";
+import { HistoryManager } from "./history";
 
 let activePanels: Array<vscode.WebviewPanel> = [];
 
@@ -119,7 +120,7 @@ export function getWebViewContent(
   );
 }
 
-export function sendMessageToActivePanels(message: WebviewMessage) {
+export function sendMessageToActivePanels(message: any) {
   console.log("Sending message to active panels: ", activePanels, message);
   activePanels.forEach((activePanel) => {
     sendMessageToWebview(activePanel, message);
@@ -128,7 +129,7 @@ export function sendMessageToActivePanels(message: WebviewMessage) {
 
 export function sendMessageToWebview(
   panel: vscode.WebviewPanel,
-  message: WebviewMessage
+  message: any
 ) {
   panel.webview.postMessage(message);
 }
@@ -140,6 +141,8 @@ export function bindWebviewEvents(
   data: Data
 ): void {
   let configs = vscode.workspace.getConfiguration("vs-browser");
+  const historyManager = new HistoryManager(context);
+  
   panel.webview.html = getWebViewContent(
     template,
     panel.webview,
@@ -147,9 +150,17 @@ export function bindWebviewEvents(
     context.extensionPath,
     data
   );
+  
+  // Send initial navigation state
+  const navState = historyManager.getNavigationState();
+  panel.webview.postMessage({
+    type: CONST_WEBVIEW.POST_MESSAGE.TYPE.UPDATE_NAVIGATION_STATE,
+    value: navState
+  });
+  
   // Handle messages from the webview
   panel.webview.onDidReceiveMessage(
-    (message: WebviewMessage) => {
+    (message: any) => {
       switch (message.type) {
         case CONST_WEBVIEW.POST_MESSAGE.TYPE.FAVOURITE_ADD:
         case CONST_WEBVIEW.POST_MESSAGE.TYPE.FAVOURITE_REMOVE: {
@@ -214,6 +225,90 @@ export function bindWebviewEvents(
             detail: detail,
           });
           return;
+        case CONST_WEBVIEW.POST_MESSAGE.TYPE.GO_BACK: {
+          const url = historyManager.goBack();
+          if (url) {
+            panel.webview.postMessage({
+              type: CONST_WEBVIEW.POST_MESSAGE.TYPE.RELOAD,
+              value: url
+            });
+          }
+          const navState = historyManager.getNavigationState();
+          panel.webview.postMessage({
+            type: CONST_WEBVIEW.POST_MESSAGE.TYPE.UPDATE_NAVIGATION_STATE,
+            value: navState
+          });
+          return;
+        }
+        case CONST_WEBVIEW.POST_MESSAGE.TYPE.GO_FORWARD: {
+          const url = historyManager.goForward();
+          if (url) {
+            panel.webview.postMessage({
+              type: CONST_WEBVIEW.POST_MESSAGE.TYPE.RELOAD,
+              value: url
+            });
+          }
+          const navState = historyManager.getNavigationState();
+          panel.webview.postMessage({
+            type: CONST_WEBVIEW.POST_MESSAGE.TYPE.UPDATE_NAVIGATION_STATE,
+            value: navState
+          });
+          return;
+        }
+        case CONST_WEBVIEW.POST_MESSAGE.TYPE.GO_HOME: {
+          const homeUrl = configs.get<string>("url") || "http://localhost";
+          panel.webview.postMessage({
+            type: CONST_WEBVIEW.POST_MESSAGE.TYPE.RELOAD,
+            value: homeUrl
+          });
+          historyManager.addEntry(homeUrl, "Home");
+          const navState = historyManager.getNavigationState();
+          panel.webview.postMessage({
+            type: CONST_WEBVIEW.POST_MESSAGE.TYPE.UPDATE_NAVIGATION_STATE,
+            value: navState
+          });
+          return;
+        }
+        case CONST_WEBVIEW.POST_MESSAGE.TYPE.ADD_HISTORY: {
+          historyManager.addEntry(message.value.url, message.value.title);
+          const navState = historyManager.getNavigationState();
+          panel.webview.postMessage({
+            type: CONST_WEBVIEW.POST_MESSAGE.TYPE.UPDATE_NAVIGATION_STATE,
+            value: navState
+          });
+          return;
+        }
+        case CONST_WEBVIEW.POST_MESSAGE.TYPE.SHOW_HISTORY: {
+          const history = historyManager.getHistory();
+          vscode.window.showQuickPick(
+            history.map(item => ({
+              label: item.title,
+              description: item.url,
+              detail: new Date(item.timestamp).toLocaleString()
+            })),
+            {
+              placeHolder: 'Select a page from history'
+            }
+          ).then(selected => {
+            if (selected) {
+              panel.webview.postMessage({
+                type: CONST_WEBVIEW.POST_MESSAGE.TYPE.RELOAD,
+                value: selected.description
+              });
+            }
+          });
+          return;
+        }
+        case CONST_WEBVIEW.POST_MESSAGE.TYPE.CLEAR_HISTORY: {
+          historyManager.clearHistory();
+          const navState = historyManager.getNavigationState();
+          panel.webview.postMessage({
+            type: CONST_WEBVIEW.POST_MESSAGE.TYPE.UPDATE_NAVIGATION_STATE,
+            value: navState
+          });
+          vscode.window.showInformationMessage('Browser history cleared');
+          return;
+        }
       }
     },
     undefined,

@@ -118,6 +118,20 @@ export default (webviewContext: WebviewContext, data: Data) => {
     CONST_WEBVIEW_POST_MESSAGE_TYPE_RELOAD: `'${CONST_WEBVIEW.POST_MESSAGE.TYPE.RELOAD}'`,
     // eslint-disable-next-line @typescript-eslint/naming-convention
     CONST_WEBVIEW_POST_MESSAGE_TYPE_SHOW_MESSAGE_BOX: `'${CONST_WEBVIEW.POST_MESSAGE.TYPE.SHOW_MESSAGE_BOX}'`,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    CONST_WEBVIEW_POST_MESSAGE_TYPE_GO_BACK: `'${CONST_WEBVIEW.POST_MESSAGE.TYPE.GO_BACK}'`,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    CONST_WEBVIEW_POST_MESSAGE_TYPE_GO_FORWARD: `'${CONST_WEBVIEW.POST_MESSAGE.TYPE.GO_FORWARD}'`,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    CONST_WEBVIEW_POST_MESSAGE_TYPE_GO_HOME: `'${CONST_WEBVIEW.POST_MESSAGE.TYPE.GO_HOME}'`,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    CONST_WEBVIEW_POST_MESSAGE_TYPE_UPDATE_NAVIGATION_STATE: `'${CONST_WEBVIEW.POST_MESSAGE.TYPE.UPDATE_NAVIGATION_STATE}'`,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    CONST_WEBVIEW_POST_MESSAGE_TYPE_ADD_HISTORY: `'${CONST_WEBVIEW.POST_MESSAGE.TYPE.ADD_HISTORY}'`,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    CONST_WEBVIEW_POST_MESSAGE_TYPE_SHOW_HISTORY: `'${CONST_WEBVIEW.POST_MESSAGE.TYPE.SHOW_HISTORY}'`,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    CONST_WEBVIEW_POST_MESSAGE_TYPE_CLEAR_HISTORY: `'${CONST_WEBVIEW.POST_MESSAGE.TYPE.CLEAR_HISTORY}'`,
   };
 
   let html = readFileSync(

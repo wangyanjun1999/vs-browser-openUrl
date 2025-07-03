@@ -9,7 +9,6 @@
     },
     "version": "1.0.0",
     "license": "SEE LICENSE IN LICENSE.md",
-
     "repository": {
         "type": "git",
         "url": "https://github.com/wangyanjun1999/vs-browser-openUrl"
@@ -29,9 +28,9 @@
         "code",
         "vscode"
     ],
-        "activationEvents": [
+    "activationEvents": [
         "onStartupFinished",
-        "onCommand:vscode-vs-browser.openUrl", 
+        "onCommand:vscode-vs-browser.openUrl",
         "onCommand:vscode-vs-browser.setProxy",
         "onCommand:vscode-vs-browser.setDefaultUrl"
     ],
@@ -65,8 +64,28 @@
             {
                 "command": "vscode-vs-browser.setDefaultUrl",
                 "title": "VS Browser: Set Default URL"
+            },
+            {
+                "command": "vs-browser.openLink",
+                "title": "在 VS Browser 中打开"
             }
         ],
+        "menus": {
+            "editor/context": [
+                {
+                    "command": "vs-browser.openLink",
+                    "when": "editorHasSelection",
+                    "group": "navigation"
+                }
+            ],
+            "explorer/context": [
+                {
+                    "command": "vs-browser.openLink",
+                    "when": "resourceExtname == .html || resourceExtname == .htm",
+                    "group": "navigation"
+                }
+            ]
+        },
         "viewsContainers": {
             "activitybar": [
                 {

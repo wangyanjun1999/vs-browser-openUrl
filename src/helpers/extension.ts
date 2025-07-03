@@ -278,6 +278,94 @@ export function registerCommands(context: vscode.ExtensionContext) {
     }
   );
   context.subscriptions.push(setDefaultUrl);
+
+  // 新增: vs-browser.openLink 命令 - 右键菜单支持
+  let openLink = vscode.commands.registerCommand(
+    "vs-browser.openLink",
+    async (uri?: vscode.Uri) => {
+      try {
+        let urlToOpen: string | undefined;
+        
+        // 1. 如果是从资源管理器调用（有 uri 参数）
+        if (uri && uri.scheme === 'file') {
+          // 如果是 HTML 文件，使用 file:// 协议打开
+          if (uri.fsPath.endsWith('.html') || uri.fsPath.endsWith('.htm')) {
+            urlToOpen = uri.toString();
+          }
+        } 
+        // 2. 如果是从编辑器调用（没有 uri 参数）
+        else {
+          const editor = vscode.window.activeTextEditor;
+          if (!editor) {
+            vscode.window.showErrorMessage('请先选中要打开的文本');
+            return;
+          }
+          
+          const selection = editor.selection;
+          const selectedText = editor.document.getText(selection).trim();
+          
+          if (!selectedText) {
+            vscode.window.showErrorMessage('请先选中要打开的文本');
+            return;
+          }
+          
+          // 处理选中的文本
+          const configs = vscode.workspace.getConfiguration("vs-browser");
+          const defaultUrl = configs.get<string>("url") || "http://localhost";
+          
+          // 从默认URL中提取基础地址
+          let baseUrl = "http://localhost";
+          try {
+            const urlObj = new URL(defaultUrl);
+            baseUrl = `${urlObj.protocol}//${urlObj.hostname}`;
+          } catch {
+            baseUrl = "http://localhost";
+          }
+          
+          // 判断选中的文本类型
+          if (/^\d+$/.test(selectedText)) {
+            // 纯数字，认为是端口号
+            urlToOpen = `${baseUrl}:${selectedText}`;
+          } else if (/^\d+\//.test(selectedText)) {
+            // 端口号+路径格式
+            urlToOpen = `${baseUrl}:${selectedText}`;
+          } else if (/^https?:\/\//i.test(selectedText)) {
+            // 完整的 URL
+            urlToOpen = selectedText;
+          } else if (/^(?:[a-z0-9-]+\.)+[a-z]{2,}(?:\/.*)?$/i.test(selectedText)) {
+            // 域名格式（如 example.com 或 example.com/path）
+            urlToOpen = `http://${selectedText}`;
+          } else {
+            // 其他情况，尝试作为搜索词
+            const autoCompleteUrl = configs.get<string>("autoCompleteUrl") || "http://";
+            if (autoCompleteUrl === "https://www.google.com/search?q=") {
+              urlToOpen = `${autoCompleteUrl}${encodeURIComponent(selectedText)}`;
+            } else {
+              urlToOpen = `${autoCompleteUrl}${selectedText}`;
+            }
+          }
+        }
+        
+        if (urlToOpen) {
+          // 在 VS Browser 中打开
+          webviewHelper.createWebviewPanel(
+            browserWebview,
+            context,
+            {
+              ...CONST_WEBVIEW.CONFIG.BASE.BROWSER,
+              url: urlToOpen,
+              title: `VS Browser - ${urlToOpen}`
+            }
+          );
+          
+          vscode.window.showInformationMessage(`已在 VS Browser 中打开: ${urlToOpen}`);
+        }
+      } catch (error) {
+        vscode.window.showErrorMessage(`打开链接失败: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+  );
+  context.subscriptions.push(openLink);
 }
 
 /**

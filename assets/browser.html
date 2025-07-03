@@ -12,8 +12,17 @@
 
 <body>
     <div id="navbar">
+        <button id="btn-back" title="Go Back" disabled>
+            <i class="codicon codicon-arrow-left"></i>
+        </button>
+        <button id="btn-forward" title="Go Forward" disabled>
+            <i class="codicon codicon-arrow-right"></i>
+        </button>
         <button id="btn-reload" title="Reload">
             <i id="btn-reload--icon" class="codicon codicon-refresh"></i>
+        </button>
+        <button id="btn-home" title="Home">
+            <i class="codicon codicon-home"></i>
         </button>
         <!-- addressbar -->
         <div class="addressbar">
@@ -55,7 +64,10 @@
 
             const iframe = $("#webview");
 
+            const btn_back = $("#btn-back");
+            const btn_forward = $("#btn-forward");
             const btn_reload = $("#btn-reload");
+            const btn_home = $("#btn-home");
             const addressbar = $("#addressbar");
             const btn_fav = $("#btn-fav");
             const btn_go = $("#btn-go");
@@ -72,6 +84,13 @@
                         RELOAD: { CONST_WEBVIEW_POST_MESSAGE_TYPE_RELOAD },
                         REFRESH_FAVOURITES: { CONST_WEBVIEW_POST_MESSAGE_TYPE_REFRESH_FAVOURITES },
                         SHOW_MESSAGE_BOX: { CONST_WEBVIEW_POST_MESSAGE_TYPE_SHOW_MESSAGE_BOX },
+                        GO_BACK: { CONST_WEBVIEW_POST_MESSAGE_TYPE_GO_BACK },
+                        GO_FORWARD: { CONST_WEBVIEW_POST_MESSAGE_TYPE_GO_FORWARD },
+                        GO_HOME: { CONST_WEBVIEW_POST_MESSAGE_TYPE_GO_HOME },
+                        UPDATE_NAVIGATION_STATE: { CONST_WEBVIEW_POST_MESSAGE_TYPE_UPDATE_NAVIGATION_STATE },
+                        ADD_HISTORY: { CONST_WEBVIEW_POST_MESSAGE_TYPE_ADD_HISTORY },
+                        SHOW_HISTORY: { CONST_WEBVIEW_POST_MESSAGE_TYPE_SHOW_HISTORY },
+                        CLEAR_HISTORY: { CONST_WEBVIEW_POST_MESSAGE_TYPE_CLEAR_HISTORY },
                     },
                 },
             };
@@ -242,7 +261,15 @@
                         togglePageFavouriteIcon(config.url);
                         break;
                     case CONSTANTS.POST_MESSAGE.TYPE.RELOAD:
-                        reloadIframe();
+                        if (message.value) {
+                            goToUrl(message.value);
+                        } else {
+                            reloadIframe();
+                        }
+                        break;
+                    case CONSTANTS.POST_MESSAGE.TYPE.UPDATE_NAVIGATION_STATE:
+                        btn_back.prop('disabled', !message.value.canGoBack);
+                        btn_forward.prop('disabled', !message.value.canGoForward);
                         break;
                 }
             });
@@ -260,8 +287,23 @@
             /**
              * Button handler
              */
+            btn_back.on("click", function () {
+                vscode.postMessage({
+                    type: CONSTANTS.POST_MESSAGE.TYPE.GO_BACK,
+                });
+            });
+            btn_forward.on("click", function () {
+                vscode.postMessage({
+                    type: CONSTANTS.POST_MESSAGE.TYPE.GO_FORWARD,
+                });
+            });
             btn_reload.on("click", function () {
                 reloadIframe();
+            });
+            btn_home.on("click", function () {
+                vscode.postMessage({
+                    type: CONSTANTS.POST_MESSAGE.TYPE.GO_HOME,
+                });
             });
             btn_go.on("click", function () {
                 goToUrl(addressbar.val());
@@ -313,6 +355,14 @@
                         url: targetUrl,
                     });
                 }
+                // Add to history
+                vscode.postMessage({
+                    type: CONSTANTS.POST_MESSAGE.TYPE.ADD_HISTORY,
+                    value: {
+                        url: targetUrl,
+                        title: targetUrl
+                    }
+                });
             }
             function autoCompleteUrl(url) {
                 if (!/^https?:\/\//i.test(url)) {
